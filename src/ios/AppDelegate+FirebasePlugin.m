@@ -224,8 +224,10 @@ didDisconnectWithUser:(GIDGoogleUser *)user
 // Called when a message arrives in the foreground and remote notifications permission has been granted
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
     fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-
+    
     @try{
+
+        
         [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
         mutableUserInfo = [userInfo mutableCopy];
         NSDictionary* aps = [mutableUserInfo objectForKey:@"aps"];
@@ -279,11 +281,13 @@ didDisconnectWithUser:(GIDGoogleUser *)user
 // Scans a message for keys which indicate a notification should be shown.
 // If found, extracts relevant keys and uses then to display a local notification
 -(void)processMessageForForegroundNotification:(NSDictionary*)messageData {
+    
     bool showForegroundNotification = [messageData objectForKey:@"notification_foreground"];
     if(!showForegroundNotification){
         return;
     }
     
+
     NSString* title = nil;
     NSString* body = nil;
     NSString* sound = nil;
@@ -360,8 +364,9 @@ didDisconnectWithUser:(GIDGoogleUser *)user
                 NSDictionary* userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"true", @"notification_foreground",
                                           messageType, @"messageType",
-                                          aps, @"aps"
-                                          , nil];
+                                          aps, @"aps",
+                                        mutableUserInfo, @"data",
+                                        nil];
                 
                 objNotificationContent.userInfo = userInfo;
                 
@@ -392,6 +397,7 @@ didDisconnectWithUser:(GIDGoogleUser *)user
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
+
     
     @try{
         if(center == nil){
@@ -416,7 +422,7 @@ didDisconnectWithUser:(GIDGoogleUser *)user
         if(![messageType isEqualToString:@"data"]){
             [mutableUserInfo setValue:@"notification" forKey:@"messageType"];
         }
-
+        
         // Print full message.
         [FirebasePlugin.firebasePlugin _logMessage:[NSString stringWithFormat:@"willPresentNotification: %@", mutableUserInfo]];
 
